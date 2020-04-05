@@ -93,7 +93,7 @@ if (require("maps")) {
     filter(region == "new york")
   
   NYT_last_county_obs <- NYT_county %>%
-    filter(state == "New York") %>%
+    filter(state == "New York", !(county %in% c("Bronx", "Queens", "Kings", "Richmond"))) %>%
     group_by(county) %>%
     top_n(1, date) %>%
     mutate(subregion = tolower(county)) %>%
@@ -132,7 +132,7 @@ if (require("maps")) {
     label = paste0("New York State has ", total_cases, "
     confirmed cases of COVID-19"), 
     size = 5) +
-    annotate("text", x = -73, y = 41.35, label = paste0("NYC has ", NYC_cases, "
+    annotate("text", x = -72.75, y = 41.55, label = paste0("NYC has ", NYC_cases, "
     confirmed cases."), 
              size = 4) +
     scale_x_continuous(breaks = NULL) + 
@@ -213,7 +213,7 @@ NY <- NYT_states %>%
 ggplot(data = NY, aes(x = cases_100, y = cases, color = state)) +
   geom_point(size = 2, show.legend = F) +
   geom_line(size = .75, show.legend = F) +
-  scale_y_log10(labels = scales::comma, limits = c(100, 200000)) +
+  scale_y_log10(labels = scales::comma, limits = c(100, 2 * max(NY$cases))) +
   geom_label_repel(data = NY %>% group_by(state) %>% top_n(1, cases_100),
                    aes(label = state), color = "black", nudge_x = 1.5) +
   geom_line(aes(y = 100 * 2^(cases_100 / 3)), linetype = 2, color = "grey") +
@@ -227,7 +227,7 @@ ggplot(data = NY, aes(x = cases_100, y = cases, color = state)) +
   annotate("text", label = "Every 3 Days", x = 24, y = 25000) +
   annotate("text", label = "Cases Double Every 2 Days", x = 22, y = 175000) +
   annotate("text", label = "Every 5 Days", x = 24, y = 3000) +
-  scale_x_continuous(breaks = seq(0,30,5)) +
+  scale_x_continuous(breaks = seq(0,100,10), limits = c(0,max(NY$cases_100)+5)) +
   scale_color_brewer(palette = "Paired")
 
 
@@ -237,8 +237,8 @@ ggsave("states_days_since_100.jpg", width = 16.1, height = 10, units = "in", dpi
 ggplot(data = NY %>% filter(deaths >=10), aes(x = deaths_10, y = deaths, color = state)) +
   geom_point(size = 2, show.legend = F) +
   geom_line(size = .75, show.legend = F) +
-  scale_y_log10(labels = scales::comma, limits = c(10, 20000)) +
-  scale_x_continuous(breaks = seq(0,35,5)) +
+  scale_y_log10(labels = scales::comma, limits = c(10, 2 * max(NY$deaths))) +
+  scale_x_continuous(breaks = seq(0,50,10), limits = c(0,max(NY$deaths_10)+5)) +
   geom_label_repel(data = NY %>% group_by(state) %>% top_n(1, deaths_10),
                    aes(label = state), color = "black", nudge_x = 1.5) +
   geom_line(aes(y = 10 * 2^(deaths_10 / 3)), linetype = 2, color = "grey") +
@@ -250,8 +250,8 @@ ggplot(data = NY %>% filter(deaths >=10), aes(x = deaths_10, y = deaths, color =
        caption = paste0("Data from NYT: https://github.com/nytimes/covid-19-data 
                         Updated as of: ", format(max(Deaths_plot$date), "%m/%d/%Y"))) +
   annotate("text", label = "Every 3 Days", x = 27, y = 7000) +
-  annotate("text", label = "Deaths Double Every 2 Days", x = 21, y = 15000) +
-  annotate("text", label = "Every 5 Days", x = 27, y = 650) +
+  annotate("text", label = "Deaths Double Every 2 Days", x = 16, y = 5000) +
+  annotate("text", label = "Every 5 Days", x = 27, y = 500) +
   scale_color_brewer(palette = "Paired")
 
 
